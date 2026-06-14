@@ -1,0 +1,2864 @@
+<!DOCTYPE html>
+<!--
+    GPX Track Editor v5.69 (Stable Release)
+    © 2026 Tony Gozdz
+    Last Updated: April 30, 2026
+    
+    A powerful web-based GPX editor for simplifying, editing, splitting, and joining GPS tracks.
+    Perfect for cleaning up recorded tracks from apps like GeoTracker before sharing or analyzing.
+    
+    Key Features:
+    - Douglas-Peucker simplification algorithm for intelligent point reduction
+    - Rectangle selection for bulk deletion of GPS interference
+    - DELETE SEGMENT mode for removing connector lines between pauses
+    - Visual point editing (drag, add, delete)
+    - Track splitting and joining
+    - Multiple map layers (Google Terrain, Satellite, OSM, Esri)
+    - Automatic doubled-date cleanup for GeoTracker exports
+    - Mobile-optimized with touch support
+    
+    Version 5.69 Changes (Fix Zoom Buttons):
+    - Fixed zoom controls being hidden by fixed header
+    - Moved Leaflet controls down 55px below header
+    - Zoom buttons now visible and accessible
+    
+    Version 5.22 Changes (NUCLEAR MENU FIX):
+    - Header now FIXED position (not relative)
+    - Z-index: 999999 (extreme value)
+    - ALL properties marked !important
+    
+    Version 5.21 Changes (Track Deletion Indices):
+    - FIXED: Gaps now persist by tracking exact deletion locations!
+    - Stores index of each deletion, forces gap there regardless of distance
+    
+    Version 5.20 Changes (Critical Bug Fix):
+    - FIXED: hasDeletedSegments variable was never declared!
+    - This was causing gaps to disappear when mode turned OFF
+    
+    Version 5.19 Changes (Adjustable Gap Threshold):
+    - Added slider to adjust gap detection threshold (10-500m)
+    - Default: 100m (works for most tracks)
+    
+    Version 5.18 Changes (Persist Gaps):
+    - FIXED: Gaps stay visible even after turning OFF delete mode!
+    - Always detects and renders gaps, not just when mode is ON
+    
+    Version 5.17 Changes (Visual Gaps):
+    - FIXED: Gaps now actually VISIBLE on screen!
+    - Detects gaps >100m and draws separate polylines for each segment
+    
+    Version 5.16 Changes (Simplified Delete Segment):
+    - FIXED: Clicking now deletes only ONE segment at a time
+    - Delete segment simply removes points, creating gaps
+    
+    Version 5.15 Changes (File Naming):
+    - Updated filename convention to match BatteryMonitor style
+    - File now named GPX_Editor_5.15.html (underscore before version)
+    
+    Version 5.14 Changes (Multi-Track Save):
+    - Save GPX now saves ALL split tracks into ONE multi-track GPX file
+    - No need to download tracks separately - one click saves everything
+    - Multiple <trk> elements in a single .gpx file
+    
+    Version 5.13 Changes (Proper Architecture):
+    - COMPLETELY REBUILT delete segment to use proper GPX multi-track structure
+    - Clicking a segment now SPLITS the track into separate tracks
+    - Saves as multi-track GPX file with separate <trk> elements
+    - NO arbitrary distance thresholds - works reliably every time
+    
+    Version 5.12 Changes (Critical Fix):
+    - FIXED: Segments now actually disappear when deleted!
+    - Track rendering now detects gaps (>1km between points)
+    - Draws multiple polylines instead of one continuous line
+    
+    Version 5.11 Changes (Enhancement):
+    - Added temporary red X markers at deletion points
+    - Shows which segments have already been deleted
+    - X markers automatically clear when turning OFF delete segment mode
+    
+    Version 5.10 Changes (Bug Fix):
+    - Fixed deleteSegment to properly delete both points (was only deleting one)
+    - Changed button text when active: "Turn Segment Deletion OFF" (clearer UX)
+    - Mode now stays on while you delete multiple segments
+    
+    Version 5.9 Changes (New Feature):
+    - Added "Delete Segment" mode for cleaning up pause/resume connectors
+    - Click on any connector line segment to delete both endpoints
+    - Creates gaps in the track (no connector lines in saved GPX)
+    - Track turns RED when delete segment mode is active
+    
+    Version 5.8 Changes (Aggressive Fix):
+    - Added forceUIVisible() call directly after every hideLoading()
+    - Menu restoration now happens immediately after loading completes
+    
+    Version 5.7 Changes (Enhanced Bug Fix):
+    - Added !important to header z-index for stronger override
+    - Reduced auto-recovery interval from 5 seconds to 1 second
+    
+    Version 5.6 Changes (Critical Bug Fix):
+    - FIXED: Disappearing menu bar during large file processing
+    - Added z-index: 9999 to header CSS (was missing entirely)
+    - Header now stays visible above loading spinner at all times
+    
+    Version 5.5 Changes:
+    - Added custom favicon (map with GPS track icon)
+    - Displays in Chrome tab and browser bookmarks
+    - Professional branding for the app
+    
+    Version 5.4 Changes (Bug Fixes):
+    - Fixed disappearing hamburger menu bug
+    - Added ESC key shortcut to restore menu if it disappears
+    - Added automatic 5-second UI recovery check
+    - Menu now stays visible during long editing sessions
+    
+    Version 5.3 Changes (UI Polish):
+    - Reduced menu width by 25% (320px → 240px) for more map space
+    - Reduced button padding by 40% for tighter layout
+    - Reduced section padding and margins for compact menu
+    - Changed default simplification to 5% (was 50%)
+    
+    Version 5.2 Changes:
+    - Added Rectangle Selection mode for bulk point deletion
+    - Draw rectangle to select multiple points, delete all at once
+    - Perfect for cleaning up GPS interference (circular patterns from jamming)
+    - Selected points highlighted in orange
+    - No delete confirmation popups for faster editing
+    - Google Terrain as default map layer (no OSM blocking issues)
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3QgZmlsbD0iIzM0OThkYiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIvPjxwYXRoIGZpbGw9IiNlY2YwZjEiIG9wYWNpdHk9IjAuMyIgZD0iTTQgOGgyNHYxNkg0eiIvPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U3NGMzYyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGQ9Ik02IDIwUTEwIDEwIDE2IDE2VDI2IDEyIi8+PGNpcmNsZSBjeD0iNiIgY3k9IjIwIiByPSIxLjUiIGZpbGw9IiNlNzRjM2MiLz48Y2lyY2xlIGN4PSIyNiIgY3k9IjEyIiByPSIxLjUiIGZpbGw9IiNlNzRjM2MiLz48L3N2Zz4=">
+    <title>GPX Track Editor v5.69</title>    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #header {
+            background: #2c3e50;
+            color: white;
+            padding: 2px 12px;
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 999999 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        #header h1 {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        #menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            padding: 2px;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+        
+        #menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 240px;
+            height: 100vh;
+            background: #34495e;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+            transition: right 0.3s ease;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+        
+        #menu.open {
+            right: 0;
+        }
+        
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1999;
+        }
+        
+        #menu-overlay.show {
+            display: block;
+        }
+        
+        .menu-header {
+            background: #2c3e50;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-header h2 {
+            font-size: 18px;
+            color: white;
+        }
+        
+        #close-menu {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .menu-section {
+            padding: 10px;
+            border-bottom: 1px solid #2c3e50;
+        }
+        
+        .menu-section h3 {
+            color: #ecf0f1;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn {
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            touch-action: manipulation;
+        }
+        
+        .btn:active {
+            background: #2980b9;
+        }
+        
+        .btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:active {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:active {
+            background: #c0392b;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+        }
+        
+        .btn-warning:active {
+            background: #e67e22;
+        }
+        
+        .btn-purple {
+            background: #9b59b6;
+        }
+        
+        .btn-purple:active {
+            background: #8e44ad;
+        }
+        
+        .btn.active {
+            background: #e67e22;
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.3);
+        }
+        
+        .btn-icon {
+            font-size: 14px;
+        }
+        
+        #file-input, #join-file-input {
+            display: none;
+        }
+        
+        #info {
+            color: #ecf0f1;
+            font-size: 14px;
+            padding: 12px 16px;
+            background: #2c3e50;
+            line-height: 1.5;
+        }
+        
+        #map {
+            flex: 1;
+            width: 100%;
+            touch-action: pan-x pan-y;
+        }
+        
+        /* Push Leaflet zoom controls down below fixed header */
+        .leaflet-top {
+            top: 22px !important;
+        }
+        
+        .instructions {
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 13px;
+            padding: 12px 16px;
+            line-height: 1.6;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .instructions li {
+            margin-bottom: 6px;
+        }
+        
+        .highlight {
+            background: #3498db;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+            font-size: 14px;
+        }
+        
+        @keyframes slideUp {
+            from {
+                bottom: -50px;
+                opacity: 0;
+            }
+            to {
+                bottom: 20px;
+                opacity: 1;
+            }
+        }
+        
+        /* Loading spinner */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 3001;
+            text-align: center;
+            display: none;
+        }
+        
+        #loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Welcome screen */
+        #welcome {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #welcome.hidden {
+            display: none;
+        }
+        
+        #welcome h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        #welcome p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        #welcome .btn {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            max-width: 250px;
+        }
+        
+        #welcome .steps {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            max-width: 350px;
+            text-align: left;
+        }
+        
+        #welcome .steps h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        #welcome .steps ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+    
+        /* Mode indicator */
+        #mode-indicator {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f39c12;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 2500;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+        
+        #mode-indicator.show {
+            display: block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Split tracks list */
+        .split-tracks-list {
+            background: #2c3e50;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .split-track-item {
+            background: #34495e;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #ecf0f1;
+        }
+        
+        .split-track-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .split-track-name {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .split-track-points {
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+/* --- v16 Fixes: clickable menu and header --- */
+/* Leaflet default z-indexes:
+   - Tiles: 200
+   - Overlays (markers, polylines): 400-600
+   - Controls (zoom, attribution): 1000
+   - Popups: 1100
+   
+   Our z-index hierarchy must be ABOVE Leaflet controls!
+*/
+
+#header {
+    position: relative;
+    z-index: 2000 !important;
+    pointer-events: auto;
+}
+
+#menu {
+    z-index: 3000 !important;
+    pointer-events: auto;
+}
+
+#menu-overlay {
+    z-index: 2999 !important;
+    pointer-events: auto;
+}
+
+#welcome, #loading {
+    z-index: 4000 !important;
+    pointer-events: auto;
+}
+
+/* Leaflet controls stay at their default z-index: 1000 */
+/* This keeps them BELOW our header (2000) but ABOVE map content (400) */
+
+/* Emergency Save Button - REMOVED (controls stay stable in v5.69+) */
+
+/* Rectangle selection */
+#selection-rectangle {
+    position: absolute;
+    border: 2px dashed #3498db;
+    background: rgba(52, 152, 219, 0.1);
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+}
+
+.marker-selected {
+    background: #f39c12 !important;
+    border: 3px solid #e67e22 !important;
+    width: 10px !important;
+    height: 10px !important;
+    margin-left: -5px !important;
+    margin-top: -5px !important;
+}
+
+</style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">Loading...</div>
+    </div>
+
+    <!-- Mode Indicator -->
+    <div id="mode-indicator"></div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome">
+        <h1>📍 GPX Track Editor</h1>
+        <p>Simplify, Edit, Split & Join GPS Tracks</p>
+        
+        <div class="steps">
+            <h3>📱 Quick Start:</h3>
+            <ol>
+                <li>Tap "Let's Go" below</li>
+                <li>Open menu (☰) at top right</li>
+                <li>Tap "Load GPX File"</li>
+                <li>Simplify, edit, split, or join tracks!</li>
+                <li>Use Rectangle Select to delete multiple points</li>
+            </ol>
+        </div>
+        
+        <button class="btn" onclick="hideWelcome()" style="margin-top: 30px; justify-content: center;">
+            <span>Let's Go! 🚀</span>
+        </button>
+        
+        <div style="margin-top: 30px; opacity: 0.7; font-size: 12px;">
+            <p>© 2026 Tony Gozdz</p>
+            <p style="margin-top: 5px;">GPX Track Editor v5.69</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="header">
+        <h1>📍 GPX Editor v5.69</h1>
+        <button id="menu-btn">☰</button>
+    </div>
+    
+    <div id="menu-overlay"></div>
+    
+    <div id="menu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button id="close-menu">×</button>
+        </div>
+        
+        <div class="menu-section">
+            <h3>📂 File</h3>
+            <label for="file-input" class="btn">
+                <span class="btn-icon">📁</span>
+                <span>Load GPX File</span>
+            </label>
+            <input type="file" id="file-input" accept=".gpx" multiple>
+            <button id="save-x-btn" class="btn" disabled>
+                <span class="btn-icon">📥</span>
+                <span id="save-x-text">Save GPX</span>
+            </button>
+            <button id="clear-btn" class="btn btn-danger" disabled>
+                <span class="btn-icon">🗑️</span>
+                <span>Clear Track</span>
+            </button>
+            <button id="exit-btn" class="btn" style="background: #95a5a6;">
+                <span class="btn-icon">🚪</span>
+                <span>Exit App</span>
+            </button>
+        </div>
+        
+        <div class="menu-section">
+            <h3>✂️ Split & Join</h3>
+            <button id="split-mode-btn" class="btn btn-warning" disabled>
+                <span class="btn-icon">✂️</span>
+                <span>Split Mode: OFF</span>
+            </button>
+            <button id="rect-select-btn" class="btn btn-warning" disabled style="margin-top: 10px;">
+                <span class="btn-icon">🔲</span>
+                <span>Rectangle Select: OFF</span>
+            </button>
+            <button id="delete-segment-btn" class="btn btn-warning" disabled style="margin-top: 10px;">
+                <span class="btn-icon">✂️</span>
+                <span>Delete Segment: OFF</span>
+            </button>
+            <div style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                <label for="gap-threshold-slider" style="display: block; margin-bottom: 4px; font-size: 11px; color: #ecf0f1;">
+                    Gap Detection: <span id="gap-threshold-value">1.0 km</span>
+                </label>
+                <input type="range" id="gap-threshold-slider" min="0" max="5" value="2" step="0.1" 
+                       style="width: 100%; margin: 0;">
+                <div style="font-size: 9px; color: #bdc3c7; margin-top: 2px;">
+                    Segments >this distance are treated as gaps (logarithmic: 10m - 1000km)
+                </div>
+            </div>
+            <button id="delete-selected-btn" class="btn btn-danger" disabled style="margin-top: 10px; display: none;">
+                <span class="btn-icon">🗑️</span>
+                <span>Delete Selected Points</span>
+            </button>
+            <div id="split-tracks-container" style="display: none;">
+                <div style="font-size: 12px; color: #ecf0f1; margin-bottom: 8px;">
+                    Tap 💾 to download each file:
+                </div>
+                <div class="split-tracks-list" id="split-tracks-list"></div>
+            </div>
+            <label for="join-file-input" class="btn btn-purple">
+                <span class="btn-icon">🔗</span>
+                <span>Or Load Multiple Files (auto-joins)</span>
+            </label>
+            <input type="file" id="join-file-input" accept=".gpx" multiple>
+            <div id="join-tracks-container" style="display: none;">
+                <div class="split-tracks-list" id="join-tracks-list"></div>
+                <button id="join-tracks-btn" class="btn btn-success" style="margin-top: 10px;">
+                    <span class="btn-icon">✨</span>
+                    <span>Join All Tracks</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="menu-section">
+            <h3>⚡ Simplify Track</h3>
+            <div style="font-size: 12px; color: #ecf0f1; margin-bottom: 10px; line-height: 1.4;">
+                Remove points on straight sections. Higher % = more aggressive simplification.
+            </div>
+            <input type="range" id="simplify-slider" min="1" max="95" step="1" value="5" style="width:100%; margin: 8px 0;">
+            <div id="simplify-value" style="color:#ecf0f1; font-size:14px; margin-bottom:10px; text-align:center; font-weight: bold;">
+                Simplification: 5%
+            </div>
+            <div style="font-size: 11px; color: #95a5a6; text-align: center; margin-bottom: 10px;">
+                Low % = Keep detail | High % = More smoothing
+            </div>
+            <button id="simplify-btn" class="btn" disabled>
+                <span class="btn-icon">⚡</span>
+                <span>Apply Simplification</span>
+            </button>
+            
+            <button id="restore-btn" class="btn" disabled title="Restore original unsimplified track">
+                <span class="btn-icon">↶</span>
+                <span>Restore Original</span>
+            </button>
+        </div>
+        
+        <div class="menu-section">
+            <h3>ℹ️ Track Info</h3>
+            <div id="info">Tap "Load GPX File" to begin</div>
+        </div>
+        
+        <div class="menu-section">
+            <h3>📖 How to Use</h3>
+            <div class="instructions">
+                <ul>
+                    <li><span class="highlight">Drag points:</span> Touch and drag the red circles</li>
+                    <li><span class="highlight">Add points:</span> Tap the blue track line</li>
+                    <li><span class="highlight">Delete points:</span> Hold circle for 2.6 sec without moving</li>
+                    <li><span class="highlight">Delete multiple:</span> Rectangle Select, drag box, delete all</li>
+                    <li><span class="highlight">Split track:</span> Enable Split Mode, tap a marker</li>
+                    <li><span class="highlight">Join tracks:</span> Load multiple GPX files</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="menu-section" style="border-bottom: none;">
+            <h3>💡 Tips</h3>
+            <div class="instructions">
+                <ul style="margin-left: 0; list-style: none;">
+                    <li>✓ Edits auto-add "_X" suffix</li>
+                    <li>✓ Split creates "_1", "_2" tracks</li>
+                    <li>✓ Join creates "_J" track</li>
+                    <li>✓ Rectangle Select for GPS interference cleanup</li>
+                    <li>✓ Original timestamps preserved</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="menu-section" style="border-bottom: none;">
+            <h3>ℹ️ About</h3>
+            <div style="text-align: center; padding: 10px 0;">
+                <p style="color: #ecf0f1; font-size: 12px; line-height: 1.8; margin: 0;">
+                    <strong>© 2026 Tony Gozdz</strong>
+                </p>
+                <p style="color: #95a5a6; font-size: 11px; margin-top: 8px;">
+                    GPX Track Editor v5.69
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    <div id="selection-rectangle"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // --- v29.0 additions ---
+        // Wrapper functions to execute Split/Join directly
+        function splitTrackAtPoint(index) {
+            splitTrackAtPointConfirm(index);
+        }
+
+        function joinAllTracks() {
+            joinAllTracksConfirm();
+        }
+
+        // Auto-save tracking (disabled - no confirmation)
+        let editCounter = 0;
+        function incrementEdits() {
+            editCounter++;
+            // Auto-save disabled to avoid interruptions
+        }
+
+        // Main script variables
+        // Main script variables
+        let map;
+        let trackLayer;
+        let markers = [];
+        let trackpoints = [];
+        let originalTrackpoints = [];
+        let gpxHeader = '';
+        let gpxFooter = '';
+        let fileName = 'modified_track.gpx';
+        let trackName = '';
+        let originalTrackName = '';
+        let isEdited = false;
+        let longPressTimer;
+        
+        // Lazy loading state
+        let markersCreated = false;  // Global flag to track if markers are currently visible
+        
+        // Split mode
+        let splitMode = false;
+        let splitTracks = [];
+        
+        // Delete segment mode
+        let deleteSegmentMode = false;
+        let deletionMarkers = [];
+        let deletionIndices = []; // Track where segments were deleted
+        let hasDeletedSegments = false; // Flag to track if any deletions occurred
+        let gapThreshold = Math.pow(10, 2 + 1); // Start at 1km (10^3 meters)
+        
+        // Rectangle selection mode
+        let rectSelectMode = false;
+        let rectStartPoint = null;
+        let rectEndPoint = null;
+        let selectedPoints = [];
+        let isDrawingRect = false;
+        
+        // Join mode
+        let tracksToJoin = [];
+        
+        // Show/hide loading
+        function showLoading(text = 'Loading...') {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading').classList.add('show');
+        }
+        
+        function hideLoading() {
+    // v29 fix: always restore header/menu visibility
+    const hdr=document.getElementById("header");
+    const menu=document.getElementById("menu");
+    if(hdr) hdr.style.zIndex=9999;
+    if(menu) menu.style.zIndex=9999;
+            document.getElementById('loading').classList.remove('show');
+            
+            // Force header visible after hiding loading
+            forceUIVisible();
+        }
+        
+        // Force header and menu to be visible (emergency recovery)
+        function forceUIVisible() {
+            const hdr = document.getElementById("header");
+            const menuBtn = document.getElementById("menu-btn");
+            if(hdr) {
+                hdr.style.display = 'flex';
+                hdr.style.visibility = 'visible';
+                hdr.style.opacity = '1';
+                hdr.style.zIndex = '9999';
+            }
+            if(menuBtn) {
+                menuBtn.style.display = 'block';
+                menuBtn.style.visibility = 'visible';
+                menuBtn.style.opacity = '1';
+            }
+        }
+        
+        // Hide welcome screen
+        function hideWelcome() {
+            document.getElementById('welcome').classList.add('hidden');
+        }
+        
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+        
+        // Show mode indicator
+        function showModeIndicator(text) {
+            const indicator = document.getElementById('mode-indicator');
+            indicator.textContent = text;
+            indicator.classList.add('show');
+        }
+        
+        function hideModeIndicator() {
+            document.getElementById('mode-indicator').classList.remove('show');
+        }
+        
+        // Extract track name from GPX header
+        // Clean up doubled dates in filenames (e.g., 2026_02_09-2026_02_09 → 2026_02_09)
+        function cleanupDoubledDate(name) {
+            // Pattern: YYYY_MM_DD-YYYY_MM_DD or YYYY-MM-DD-YYYY-MM-DD
+            const pattern = /(\d{4}[_-]\d{2}[_-]\d{2})[_-](\d{4}[_-]\d{2}[_-]\d{2})/;
+            const match = name.match(pattern);
+            if (match && match[1].replace(/_/g, '-') === match[2].replace(/_/g, '-')) {
+                // Dates are identical, remove the duplicate
+                return name.replace(pattern, '$1');
+            }
+            return name;
+        }
+        
+        function extractTrackName(header) {
+            const nameMatch = header.match(/<name>(.*?)<\/name>/);
+            let name = nameMatch ? nameMatch[1] : 'track';
+            // Clean up doubled dates
+            name = cleanupDoubledDate(name);
+            return name;
+        }
+        
+        // Update track name in GPX header
+        function updateTrackName(newName) {
+            trackName = newName;
+            if (gpxHeader.includes('<name>')) {
+                gpxHeader = gpxHeader.replace(/<name>.*?<\/name>/, `<name>${newName}</name>`);
+            } else {
+                // If no name tag exists, add one after <trk>
+                gpxHeader = gpxHeader.replace(/<trk>/, `<trk>\n  <name>${newName}</name>`);
+            }
+        }
+        
+        // Add edited suffix to track name
+        function markAsEdited() {
+            if (!isEdited) {
+                isEdited = true;
+                const baseName = originalTrackName.replace(/_X$/, '');
+                const newName = baseName + '_X';
+                updateTrackName(newName);
+                fileName = newName + '.gpx';
+                updateInfo();
+                showToast('Track marked as edited (_X)');
+            }
+        }
+        
+        // Initialize map
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: true,
+                attributionControl: true,
+                zoomSnap: 0.25,       // Allow quarter-zoom levels (10, 10.25, 10.5, 10.75, 11, etc.)
+                zoomDelta: 0.25,      // Zoom in/out by 0.25 steps
+                wheelPxPerZoomLevel: 120  // Smoother mouse wheel zooming
+            }).setView([0, 0], 2);
+            
+            L.control.attribution({
+                position: 'bottomleft',
+                prefix: '© Maps'
+            }).addTo(map);
+            
+            // Define multiple base layers
+            const baseLayers = {
+                "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }),
+                "OpenTopoMap": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 17,
+                    attribution: '© OpenTopoMap'
+                }),
+                "Google Satellite": L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    attribution: '© Google'
+                }),
+                "Google Terrain": L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    attribution: '© Google'
+                }),
+                "Google Hybrid": L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    attribution: '© Google'
+                }),
+                "Esri World Imagery": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 19,
+                    attribution: '© Esri'
+                })
+            };
+            
+            // Add default layer
+            baseLayers["Google Terrain"].addTo(map);
+            
+            // Add layer control
+            L.control.layers(baseLayers, null, {
+                position: 'topright',
+                collapsed: true
+            }).addTo(map);
+            
+            // Add scale bar
+            L.control.scale({position: 'bottomright'}).addTo(map);
+            
+            // Add zoom level display
+            const zoomDisplay = L.control({position: 'bottomleft'});
+            zoomDisplay.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'zoom-display');
+                div.style.background = 'white';
+                div.style.padding = '8px 12px';
+                div.style.borderRadius = '4px';
+                div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                div.style.fontSize = '14px';
+                div.style.fontWeight = 'bold';
+                div.style.cursor = 'default';
+                
+                function updateZoom() {
+                    div.textContent = `Zoom: ${map.getZoom().toFixed(2)}`;
+                }
+                
+                map.on('zoom', updateZoom);
+                updateZoom();
+                return div;
+            };
+            zoomDisplay.addTo(map);
+            
+            // For large files, manage markers based on zoom level
+            map.on('zoomend', function() {
+                const currentZoom = map.getZoom();
+                const pointCount = trackpoints ? trackpoints.length : 0;
+                // Thresholds: zoom 8 for 5K+, zoom 9 for 1K-5K (allows local hikes to show markers)
+                const minZoomForMarkers = pointCount > 5000 ? 8 : (pointCount > 1000 ? 9 : 0);
+                
+                // Only manage if file is large enough to need lazy loading
+                if (pointCount <= 1000) {
+                    return;
+                }
+                
+                // Create markers when zooming in past threshold
+                if (currentZoom >= minZoomForMarkers && !markersCreated) {
+                    markersCreated = true;
+                    createMarkers();
+                    showToast(`Showing ${pointCount} markers`);
+                } 
+                // Clear markers when zooming out below threshold
+                else if (currentZoom < minZoomForMarkers && markersCreated) {
+                    markersCreated = false;
+                    clearMarkers();
+                    showToast(`Markers hidden (zoom in to level ${minZoomForMarkers}+)`);
+                }
+            });
+        }
+        
+        // Parse GPX file
+        function parseGPX(gpxText) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(gpxText, 'text/xml');
+            
+            // Extract header
+            const firstTrkptIndex = gpxText.indexOf('<trkpt');
+            if (firstTrkptIndex > 0) {
+                gpxHeader = gpxText.substring(0, firstTrkptIndex);
+            }
+            
+            // Extract footer
+            const lastTrkptIndex = gpxText.lastIndexOf('</trkpt>');
+            if (lastTrkptIndex > 0) {
+                gpxFooter = gpxText.substring(lastTrkptIndex + 8);
+            }
+            
+            // Extract track name
+            trackName = extractTrackName(gpxHeader);
+            originalTrackName = trackName;
+            
+            // Update header with cleaned name if it was changed
+            if (gpxHeader.includes('<n>')) {
+                gpxHeader = gpxHeader.replace(/<n>.*?<\/name>/, `<n>${trackName}</n>`);
+            }
+            
+            // Get all tracks (multi-track support)
+            const trks = xmlDoc.getElementsByTagName('trk');
+            const points = [];
+            const boundaries = [];
+            
+            for (let trackIdx = 0; trackIdx < trks.length; trackIdx++) {
+                const trkpts = trks[trackIdx].getElementsByTagName('trkpt');
+                
+                for (let i = 0; i < trkpts.length; i++) {
+                    const lat = parseFloat(trkpts[i].getAttribute('lat'));
+                    const lon = parseFloat(trkpts[i].getAttribute('lon'));
+                    
+                    const eleNode = trkpts[i].getElementsByTagName('ele')[0];
+                    const ele = eleNode ? eleNode.textContent : null;
+                    
+                    const timeNode = trkpts[i].getElementsByTagName('time')[0];
+                    const time = timeNode ? timeNode.textContent : null;
+                    
+                    points.push({ lat, lon, ele, time });
+                }
+                
+                // Mark boundary after last point of this track
+                if (trackIdx < trks.length - 1 && points.length > 0) {
+                    boundaries.push(points.length - 1);
+                }
+            }
+            
+            window.trackBoundaries = boundaries;
+            return points;
+        }
+        
+        
+// Simplify/decimation adjustment for v29.0
+function adjustSimplifyForTarget(points) {
+    const N = points.length;
+    const target = 5000;
+    if (N <= target) return points;
+    const percent = Math.min(80, Math.max(5, (target / N) * 100));
+    const tolerance = percentToTolerance(percent);
+    return simplifyTrack(points, tolerance);
+}
+
+// Convert slider percentage to Douglas-Peucker tolerance
+// Simple linear formula - proven fast and reliable
+function percentToTolerance(percent) {
+    // Linear formula (same as original v4.1):
+    // At 1%:  tolerance = 0.00002
+    // At 10%: tolerance = 0.00011
+    // At 50%: tolerance = 0.00050
+    // At 95%: tolerance = 0.00095
+    return 0.00001 + (percent / 100) * 0.00099;
+}
+
+// Simplify track using Douglas-Peucker algorithm
+        function simplifyTrack(points, tolerance = 0.0001) {
+            if (points.length <= 2) return points;
+            
+            function getPerpendicularDistance(point, lineStart, lineEnd) {
+                const x = point.lat;
+                const y = point.lon;
+                const x1 = lineStart.lat;
+                const y1 = lineStart.lon;
+                const x2 = lineEnd.lat;
+                const y2 = lineEnd.lon;
+                
+                const A = x - x1;
+                const B = y - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+                
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                let param = -1;
+                
+                if (lenSq !== 0) param = dot / lenSq;
+                
+                let xx, yy;
+                
+                if (param < 0) {
+                    xx = x1;
+                    yy = y1;
+                } else if (param > 1) {
+                    xx = x2;
+                    yy = y2;
+                } else {
+                    xx = x1 + param * C;
+                    yy = y1 + param * D;
+                }
+                
+                const dx = x - xx;
+                const dy = y - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            function douglasPeucker(points, tolerance) {
+                if (points.length <= 2) return points;
+                
+                let maxDistance = 0;
+                let index = 0;
+                const end = points.length - 1;
+                
+                for (let i = 1; i < end; i++) {
+                    const distance = getPerpendicularDistance(points[i], points[0], points[end]);
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                        index = i;
+                    }
+                }
+                
+                if (maxDistance > tolerance) {
+                    const left = douglasPeucker(points.slice(0, index + 1), tolerance);
+                    const right = douglasPeucker(points.slice(index), tolerance);
+                    return left.slice(0, -1).concat(right);
+                } else {
+                    return [points[0], points[end]];
+                }
+            }
+            
+            return douglasPeucker(points, tolerance);
+        }
+        
+        // Create marker
+        function createMarker(point, index) {
+            // Create custom icon - transparent red circle outline
+            const markerIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="width: 3.5px; height: 3.5px; background: transparent; border: 1.5px solid #e74c3c; border-radius: 50%; cursor: move;"></div>',
+                iconSize: [6, 6],
+                iconAnchor: [3, 3]
+            });
+            
+            const marker = L.marker([point.lat, point.lon], {
+                icon: markerIcon,
+                draggable: !splitMode && !rectSelectMode
+            }).addTo(map);
+            
+            marker.pointIndex = index;
+            let longPressActive = false;
+            let touchMoved = false;
+            
+            // Handle split mode click
+            marker.on('click', function(e) {
+                if (splitMode) {
+                    L.DomEvent.stopPropagation(e);
+                    splitTrackAtPoint(index);
+                }
+                if (rectSelectMode) {
+                    L.DomEvent.stopPropagation(e);
+                }
+            });
+            
+            // Prevent map interaction when touching marker
+            const markerElement = marker.getElement();
+            if (markerElement) {
+                markerElement.addEventListener('touchstart', function(e) {
+                    if (splitMode || rectSelectMode) return;
+                    
+                    touchMoved = false;
+                    longPressActive = false;
+                    map.dragging.disable();
+                    map.touchZoom.disable();
+                    map.doubleClickZoom.disable();
+                    map.scrollWheelZoom.disable();
+                    
+                    // Start long-press timer (2.6 seconds to avoid accidental deletion)
+                    longPressTimer = setTimeout(() => {
+                        if (!touchMoved) {
+                            longPressActive = true;
+                            map.dragging.enable();
+                            map.touchZoom.enable();
+                            map.doubleClickZoom.enable();
+                            map.scrollWheelZoom.enable();
+                            
+                            deletePoint(index);
+                        }
+                    }, 2600);
+                }, { passive: false });
+                
+                markerElement.addEventListener('touchmove', function(e) {
+                    if (splitMode || rectSelectMode) return;
+                    touchMoved = true;
+                    clearTimeout(longPressTimer);
+                }, { passive: false });
+                
+                markerElement.addEventListener('touchend', function(e) {
+                    if (splitMode || rectSelectMode) return;
+                    
+                    clearTimeout(longPressTimer);
+                    
+                    setTimeout(() => {
+                        map.dragging.enable();
+                        map.touchZoom.enable();
+                        map.doubleClickZoom.enable();
+                        map.scrollWheelZoom.enable();
+                    }, 100);
+                    
+                    if (touchMoved && !longPressActive) {
+                        markAsEdited();
+                        showToast('Point moved');
+                    }
+                }, { passive: false });
+            }
+            
+            // Update trackpoint during drag
+            marker.on('drag', function(e) {
+                const newLatLng = marker.getLatLng();
+                trackpoints[index].lat = newLatLng.lat;
+                trackpoints[index].lon = newLatLng.lng;
+                updateTrackLine();
+            });
+            
+            marker.on('dragend', function(e) {
+                markAsEdited();
+            });
+            
+            // Desktop right-click to delete
+            marker.on('contextmenu', function(e) {
+                if (splitMode || rectSelectMode) return;
+                L.DomEvent.preventDefault(e);
+                deletePoint(index);
+            });
+            
+            return marker;
+        }
+        
+        // Delete point
+        function deletePoint(index) {
+            if (trackpoints.length <= 2) {
+                showToast('Need at least 2 points');
+                return;
+            }
+            
+            trackpoints.splice(index, 1);
+            map.removeLayer(markers[index]);
+            markers.splice(index, 1);
+            
+            markers.forEach((m, i) => {
+                m.pointIndex = i;
+            });
+            
+            updateTrackLine();
+            updateInfo();
+            markAsEdited();
+            showToast('Point deleted');
+        }
+        
+        // Update track line
+        function updateTrackLine() {
+            if (trackLayer) {
+                map.removeLayer(trackLayer);
+            }
+            
+            // Always use gap-based segmentation - respects gap threshold for breaking lines
+            // This naturally breaks joined tracks and multi-track files at specified distances
+            const segments = detectGapsAndSegment();
+            const polylines = [];
+            const color = splitMode ? '#f39c12' : (deleteSegmentMode ? '#e74c3c' : '#3498db');
+            
+            segments.forEach(segmentPoints => {
+                if (segmentPoints.length < 2) return;
+                
+                // Create invisible wider polyline for tap detection
+                const hitPolyline = L.polyline(segmentPoints, {
+                    color: 'transparent',
+                    weight: 25,
+                    opacity: 0,
+                    interactive: !splitMode && !rectSelectMode || deleteSegmentMode
+                });
+                
+                // Create visible polyline
+                const visiblePolyline = L.polyline(segmentPoints, {
+                    color: color,
+                    weight: 2.5,
+                    opacity: 0.8,
+                    interactive: false
+                });
+                
+                polylines.push(hitPolyline);
+                polylines.push(visiblePolyline);
+                
+                // Add click handler for delete segment mode
+                if (deleteSegmentMode) {
+                    hitPolyline.on('click', function(e) {
+                        const clickLatLng = e.latlng;
+                        
+                        let minDist = Infinity;
+                        let segmentIndex = 0;
+                        
+                        // Find closest segment in entire track
+                        for (let i = 0; i < trackpoints.length - 1; i++) {
+                            const p1 = L.latLng(trackpoints[i].lat, trackpoints[i].lon);
+                            const p2 = L.latLng(trackpoints[i + 1].lat, trackpoints[i + 1].lon);
+                            
+                            const dist = L.GeometryUtil.distanceSegment(map, clickLatLng, p1, p2);
+                            
+                            if (dist < minDist) {
+                                minDist = dist;
+                                segmentIndex = i;
+                            }
+                        }
+                        
+                        deleteSegmentAndSplit(segmentIndex);
+                    });
+                }
+                // Add click handler for normal mode
+                else if (!splitMode && !rectSelectMode) {
+                    hitPolyline.on('click', function(e) {
+                        const clickLatLng = e.latlng;
+                        
+                        let minDist = Infinity;
+                        let insertIndex = 0;
+                        
+                        for (let i = 0; i < trackpoints.length - 1; i++) {
+                                const p1 = L.latLng(trackpoints[i].lat, trackpoints[i].lon);
+                                const p2 = L.latLng(trackpoints[i + 1].lat, trackpoints[i + 1].lon);
+                                
+                                const dist = L.GeometryUtil.distanceSegment(map, clickLatLng, p1, p2);
+                                
+                                if (dist < minDist) {
+                                    minDist = dist;
+                                    insertIndex = i + 1;
+                                }
+                            }
+                            
+                            const newPoint = {
+                                lat: clickLatLng.lat,
+                                lon: clickLatLng.lng,
+                                ele: interpolateElevation(insertIndex),
+                                time: interpolateTime(insertIndex)
+                            };
+                            
+                            trackpoints.splice(insertIndex, 0, newPoint);
+                            
+                            clearMarkers();
+                            createMarkers();
+                            updateTrackLine();
+                            updateInfo();
+                            markAsEdited();
+                            showToast('Point added');
+                        });
+                    }
+                });
+                
+                trackLayer = L.layerGroup(polylines).addTo(map);
+        }
+        
+        
+        // Detect gaps and split trackpoints into segments
+        function detectGapsAndSegment() {
+            const segments = [];
+            let currentSegment = [];
+            const boundaries = window.trackBoundaries || [];
+            
+            // Convert to Sets for O(1) lookup instead of O(n) array.includes()
+            const boundarySet = new Set(boundaries);
+            const deletionSet = new Set(deletionIndices);
+            
+            for (let i = 0; i < trackpoints.length; i++) {
+                currentSegment.push([trackpoints[i].lat, trackpoints[i].lon]);
+                
+                // Check if next point is far away (gap), deletion point, OR track boundary
+                if (i < trackpoints.length - 1) {
+                    const p1 = L.latLng(trackpoints[i].lat, trackpoints[i].lon);
+                    const p2 = L.latLng(trackpoints[i + 1].lat, trackpoints[i + 1].lon);
+                    const distance = p1.distanceTo(p2);
+                    
+                    // Force gap if: track boundary, deletion point, or distance threshold
+                    const isTrackBoundary = boundarySet.has(i);
+                    const isDelPoint = deletionSet.has(i);
+                    
+                    if (isTrackBoundary || distance > gapThreshold || isDelPoint) {
+                        if (currentSegment.length > 0) {
+                            segments.push(currentSegment);
+                        }
+                        currentSegment = [];
+                    }
+                }
+            }
+            
+            // Add last segment
+            if (currentSegment.length > 0) {
+                segments.push(currentSegment);
+            }
+            
+            return segments.length > 0 ? segments : [[...trackpoints.map(p => [p.lat, p.lon])]];
+        }
+        
+        // Interpolate elevation
+        function interpolateElevation(index) {
+            if (index === 0 || index >= trackpoints.length) return null;
+            
+            const prev = trackpoints[index - 1];
+            const next = trackpoints[index];
+            
+            if (prev.ele && next.ele) {
+                return ((parseFloat(prev.ele) + parseFloat(next.ele)) / 2).toFixed(1);
+            }
+            
+            return prev.ele || next.ele;
+        }
+        
+        // Interpolate time
+        function interpolateTime(index) {
+            if (index === 0 || index >= trackpoints.length) return null;
+            
+            const prev = trackpoints[index - 1];
+            const next = trackpoints[index];
+            
+            if (prev.time && next.time) {
+                const prevTime = new Date(prev.time).getTime();
+                const nextTime = new Date(next.time).getTime();
+                const avgTime = new Date((prevTime + nextTime) / 2);
+                return avgTime.toISOString();
+            }
+            
+            return prev.time || next.time;
+        }
+        
+        // Clear markers
+        // Create markers
+        function createMarkers() {
+            markersCreated = true;
+            trackpoints.forEach((point, index) => {
+                const marker = createMarker(point, index);
+                markers.push(marker);
+            });
+        }
+        
+        function clearMarkers() {
+            markersCreated = false;
+            markers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            markers = [];
+        }
+        
+        // Toggle split mode
+        function toggleSplitMode() {
+            splitMode = !splitMode;
+            const btn = document.getElementById('split-mode-btn');
+            
+            if (splitMode) {
+                btn.classList.add('active');
+                btn.querySelector('span:last-child').textContent = 'Split Mode: ON';
+                showModeIndicator('✂️ Split Mode: Tap a marker to split');
+                
+                // Disable rectangle select if active
+                if (rectSelectMode) toggleRectSelectMode();
+                
+                // Disable marker dragging
+                markers.forEach(m => m.dragging.disable());
+                
+                // Update track line color
+                updateTrackLine();
+            } else {
+                btn.classList.remove('active');
+                btn.querySelector('span:last-child').textContent = 'Split Mode: OFF';
+                hideModeIndicator();
+                
+                // Enable marker dragging
+                markers.forEach(m => m.dragging.enable());
+                
+                // Update track line color
+                updateTrackLine();
+            }
+        }
+        
+        // Toggle rectangle selection mode
+        function toggleRectSelectMode() {
+            rectSelectMode = !rectSelectMode;
+            const btn = document.getElementById('rect-select-btn');
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            
+            if (rectSelectMode) {
+                btn.classList.add('active');
+                btn.querySelector('span:last-child').textContent = 'Rectangle Select: ON';
+                showModeIndicator('🔲 Rectangle Select: Click and drag to select points');
+                
+                // Disable split mode if active
+                if (splitMode) toggleSplitMode();
+                
+                // Disable marker dragging
+                markers.forEach(m => m.dragging.disable());
+                
+                // Clear any previous selection
+                clearSelection();
+                
+                // Update track line to disable click handler
+                updateTrackLine();
+                
+                // Setup rectangle drawing listeners
+                setupRectangleDrawing();
+            } else {
+                btn.classList.remove('active');
+                btn.querySelector('span:last-child').textContent = 'Rectangle Select: OFF';
+                hideModeIndicator();
+                
+                // Enable marker dragging
+                markers.forEach(m => m.dragging.enable());
+                
+                // Clear selection and hide delete button
+                clearSelection();
+                deleteBtn.style.display = 'none';
+                
+                // Update track line to re-enable click handler
+                updateTrackLine();
+                
+                // Remove rectangle drawing listeners
+                removeRectangleDrawing();
+            }
+        }
+        
+        // Toggle delete segment mode
+        function toggleDeleteSegmentMode() {
+            deleteSegmentMode = !deleteSegmentMode;
+            const btn = document.getElementById('delete-segment-btn');
+            
+            if (deleteSegmentMode) {
+                btn.classList.add('active');
+                btn.querySelector('span:last-child').textContent = 'Turn Segment Deletion OFF';
+                showModeIndicator('✂️ Delete Segment: Click a line to delete that segment');
+                
+                // Disable other modes
+                if (splitMode) toggleSplitMode();
+                if (rectSelectMode) toggleRectSelectMode();
+                
+                // Disable marker dragging
+                markers.forEach(m => m.dragging.disable());
+                
+                // Update track line
+                updateTrackLine();
+            } else {
+                btn.classList.remove('active');
+                btn.querySelector('span:last-child').textContent = 'Delete Segment: OFF';
+                hideModeIndicator();
+                
+                // Clear deletion markers (X marks)
+                clearDeletionMarkers();
+                
+                // Enable marker dragging
+                markers.forEach(m => m.dragging.enable());
+                
+                // Update track line
+                updateTrackLine();
+            }
+        }
+        
+        // Delete a segment (creates a gap in the track, will split on save)
+        function deleteSegmentAndSplit(segmentIndex) {
+            if (trackpoints.length < 3) {
+                showToast('Need at least 3 points');
+                return;
+            }
+            
+            if (segmentIndex === 0 || segmentIndex === trackpoints.length - 2) {
+                showToast('Cannot delete first or last segment');
+                return;
+            }
+            
+            // Get the location of the segment midpoint for the X marker
+            const pt1 = trackpoints[segmentIndex];
+            const pt2 = trackpoints[segmentIndex + 1];
+            const midLat = (pt1.lat + pt2.lat) / 2;
+            const midLon = (pt1.lon + pt2.lon) / 2;
+            
+            // Create X marker at deletion point
+            const xIcon = L.divIcon({
+                className: 'deletion-marker',
+                html: '<div style="color: red; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 2px white;">✕</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+            
+            const xMarker = L.marker([midLat, midLon], { icon: xIcon }).addTo(map);
+            deletionMarkers.push(xMarker);
+            
+            // Simply delete both points that define this segment
+            // This creates a gap in the track
+            trackpoints.splice(segmentIndex, 2);
+            
+            // Record the index where deletion happened (for gap detection)
+            // After deletion, the gap is at segmentIndex
+            deletionIndices.push(segmentIndex);
+            
+            // Mark that we've deleted segments
+            hasDeletedSegments = true;
+            
+            // Mark as edited
+            markAsEdited();
+            
+            // Redraw
+            clearMarkers();
+            createMarkers();
+            updateTrackLine();
+            updateInfo();
+            
+            showToast('Segment deleted (gap created)');
+        }
+        
+        // Clear deletion markers (X marks)
+        function clearDeletionMarkers() {
+            deletionMarkers.forEach(m => map.removeLayer(m));
+            deletionMarkers = [];
+            deletionIndices = [];
+            hasDeletedSegments = false;
+        }
+        
+        // Setup rectangle drawing on map
+        function setupRectangleDrawing() {
+            const mapContainer = map.getContainer();
+            
+            mapContainer.addEventListener('mousedown', startRectangle);
+            mapContainer.addEventListener('mousemove', drawRectangle);
+            mapContainer.addEventListener('mouseup', endRectangle);
+            
+            // Touch support
+            mapContainer.addEventListener('touchstart', startRectangle);
+            mapContainer.addEventListener('touchmove', drawRectangle);
+            mapContainer.addEventListener('touchend', endRectangle);
+        }
+        
+        // Remove rectangle drawing listeners
+        function removeRectangleDrawing() {
+            const mapContainer = map.getContainer();
+            
+            mapContainer.removeEventListener('mousedown', startRectangle);
+            mapContainer.removeEventListener('mousemove', drawRectangle);
+            mapContainer.removeEventListener('mouseup', endRectangle);
+            
+            mapContainer.removeEventListener('touchstart', startRectangle);
+            mapContainer.removeEventListener('touchmove', drawRectangle);
+            mapContainer.removeEventListener('touchend', endRectangle);
+        }
+        
+        // Start drawing rectangle
+        function startRectangle(e) {
+            if (!rectSelectMode) return;
+            
+            // Disable map dragging while drawing
+            map.dragging.disable();
+            
+            const rect = document.getElementById('selection-rectangle');
+            const point = getEventPoint(e);
+            
+            rectStartPoint = point;
+            isDrawingRect = true;
+            
+            rect.style.left = point.x + 'px';
+            rect.style.top = point.y + 'px';
+            rect.style.width = '0px';
+            rect.style.height = '0px';
+            rect.style.display = 'block';
+        }
+        
+        // Draw rectangle as mouse/finger moves
+        function drawRectangle(e) {
+            if (!isDrawingRect || !rectSelectMode) return;
+            
+            e.preventDefault();
+            const rect = document.getElementById('selection-rectangle');
+            const point = getEventPoint(e);
+            
+            const width = Math.abs(point.x - rectStartPoint.x);
+            const height = Math.abs(point.y - rectStartPoint.y);
+            const left = Math.min(point.x, rectStartPoint.x);
+            const top = Math.min(point.y, rectStartPoint.y);
+            
+            rect.style.left = left + 'px';
+            rect.style.top = top + 'px';
+            rect.style.width = width + 'px';
+            rect.style.height = height + 'px';
+        }
+        
+        // End rectangle drawing and select points
+        function endRectangle(e) {
+            if (!isDrawingRect || !rectSelectMode) return;
+            
+            const rect = document.getElementById('selection-rectangle');
+            const point = getEventPoint(e);
+            rectEndPoint = point;
+            
+            // Hide rectangle
+            rect.style.display = 'none';
+            isDrawingRect = false;
+            
+            // Re-enable map dragging
+            map.dragging.enable();
+            
+            // Select points within rectangle
+            selectPointsInRectangle();
+        }
+        
+        // Get event point (works for mouse and touch)
+        function getEventPoint(e) {
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            return {
+                x: clientX,
+                y: clientY
+            };
+        }
+        
+        // Select all points within the drawn rectangle
+        function selectPointsInRectangle() {
+            if (!rectStartPoint || !rectEndPoint) return;
+            
+            clearSelection();
+            
+            // Rectangle is in page coordinates, convert to map container coordinates
+            const mapContainer = map.getContainer();
+            const mapRect = mapContainer.getBoundingClientRect();
+            
+            const minX = Math.min(rectStartPoint.x, rectEndPoint.x) - mapRect.left;
+            const maxX = Math.max(rectStartPoint.x, rectEndPoint.x) - mapRect.left;
+            const minY = Math.min(rectStartPoint.y, rectEndPoint.y) - mapRect.top;
+            const maxY = Math.max(rectStartPoint.y, rectEndPoint.y) - mapRect.top;
+            
+            markers.forEach((marker, index) => {
+                const markerPoint = map.latLngToContainerPoint(marker.getLatLng());
+                
+                if (markerPoint.x >= minX && markerPoint.x <= maxX &&
+                    markerPoint.y >= minY && markerPoint.y <= maxY) {
+                    selectedPoints.push(index);
+                    marker.getElement().classList.add('marker-selected');
+                }
+            });
+            
+            // Show delete button if points selected
+            if (selectedPoints.length > 0) {
+                const deleteBtn = document.getElementById('delete-selected-btn');
+                deleteBtn.style.display = 'block';
+                deleteBtn.disabled = false;
+                showToast(`Selected ${selectedPoints.length} points`);
+            } else {
+                showToast('No points in selection');
+            }
+        }
+        
+        // Clear selection
+        function clearSelection() {
+            selectedPoints = [];
+            markers.forEach(marker => {
+                marker.getElement().classList.remove('marker-selected');
+            });
+        }
+        
+        // Delete selected points
+        function deleteSelectedPoints() {
+            if (selectedPoints.length === 0) {
+                showToast('No points selected');
+                return;
+            }
+            
+            const count = selectedPoints.length;
+            
+            // Sort indices in descending order to delete from end
+            selectedPoints.sort((a, b) => b - a);
+            
+            // Delete each point
+            selectedPoints.forEach(index => {
+                trackpoints.splice(index, 1);
+            });
+            
+            // Mark as edited
+            if (!isEdited) {
+                isEdited = true;
+                const baseName = originalTrackName.replace(/_X$/, '');
+                const newName = baseName + '_X';
+                updateTrackName(newName);
+                fileName = newName + '.gpx';
+            }
+            
+            // Clear selection and redraw
+            clearSelection();
+            document.getElementById('delete-selected-btn').style.display = 'none';
+            
+            // Redraw map
+            clearMarkers();
+            if (trackLayer) map.removeLayer(trackLayer);
+            trackLayer = L.polyline(trackpoints.map(p => [p.lat, p.lon]), {
+                color: '#3498db',
+                weight: 2.5
+            }).addTo(map);
+            
+            trackpoints.forEach((pt, idx) => {
+                const m = createMarker(pt, idx);
+                markers.push(m);
+                m.addTo(map);
+            });
+            
+            updateInfo();
+            showToast(`Deleted ${count} points`);
+        }
+        
+        // Split track at point
+        function splitTrackAtPointConfirm(index) {
+            if (trackpoints.length < 2) {
+                showToast('Need at least 2 points to split');
+                return;
+            }
+            
+            if (index === 0 || index === trackpoints.length - 1) {
+                showToast('Cannot split at first or last point');
+                return;
+            }
+            
+            // Split tracks (point stays with first track)
+            const track1 = trackpoints.slice(0, index + 1);
+            const track2 = trackpoints.slice(index + 1);
+            
+            const baseName = originalTrackName.replace(/_\d+$/, '').replace(/_X$/, '').replace(/_J$/, '');
+            const splitNum = splitTracks.length + 1;
+            
+            splitTracks.push({
+                name: `${baseName}_${splitNum}`,
+                points: track1
+            });
+            
+            splitTracks.push({
+                name: `${baseName}_${splitNum + 1}`,
+                points: track2
+            });
+            
+            // Keep BOTH tracks visible - merge them back for display
+            // trackpoints stays as-is, so both segments remain on screen
+            
+            // Add red X marker at split point
+            const splitPt = trackpoints[index];
+            const xIcon = L.divIcon({
+                className: 'split-marker',
+                html: '<div style="color: red; font-size: 24px; font-weight: bold; text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;">✕</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+            
+            const splitMarker = L.marker([splitPt.lat, splitPt.lon], { icon: xIcon }).addTo(map);
+            
+            // Store split marker so we can clear it later
+            if (!window.splitMarkers) window.splitMarkers = [];
+            window.splitMarkers.push(splitMarker);
+            
+            // Update filename but don't change trackpoints
+            fileName = `${baseName}_split.gpx`;
+            
+            // Update split tracks list
+            updateSplitTracksList();
+            
+            // Disable split mode after splitting
+            toggleSplitMode();
+            
+            showToast(`Track split! Click Save to download both files`);
+        }
+        
+        // Update split tracks list
+        function updateSplitTracksList() {
+            const container = document.getElementById('split-tracks-container');
+            const list = document.getElementById('split-tracks-list');
+            
+            if (splitTracks.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            splitTracks.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'split-track-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="split-track-name">${track.name}</div>
+                        <div class="split-track-points">${track.points.length} points</div>
+                    </div>
+                    <button class="btn btn-success" style="margin: 0; padding: 8px 12px; width: auto; font-size: 14px;" onclick="downloadSingleSplit(${index})">💾</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // Download single split track
+        function downloadSingleSplit(index) {
+            if (index < 0 || index >= splitTracks.length) return;
+            
+            const track = splitTracks[index];
+            const gpx = generateGPXForTrack(track.name, track.points);
+            const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+            if (window.lastSaveUrl) URL.revokeObjectURL(window.lastSaveUrl);
+    const url = URL.createObjectURL(blob);
+    window.lastSaveUrl = url;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${track.name}.gpx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Downloaded ${track.name}.gpx`);
+        }
+        
+        // Download all split tracks
+        function downloadAllSplits() {
+            if (splitTracks.length === 0) {
+                showToast('No split tracks to download');
+                return;
+            }
+            
+            // Download with long delays for Android compatibility
+            let downloadIndex = 0;
+            function downloadNext() {
+                if (downloadIndex >= splitTracks.length) {
+                    showToast(`✓ Downloaded ${splitTracks.length} split tracks`);
+                    closeMenu();
+                    return;
+                }
+                
+                const track = splitTracks[downloadIndex];
+                showToast(`Downloading ${track.name}.gpx (${downloadIndex + 1}/${splitTracks.length})`);
+                
+                const gpx = generateGPXForTrack(track.name, track.points);
+                const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+                if (window.lastSaveUrl) URL.revokeObjectURL(window.lastSaveUrl);
+    const url = URL.createObjectURL(blob);
+    window.lastSaveUrl = url;
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${track.name}.gpx`;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                
+                // Force download with delay
+                setTimeout(() => {
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }, 100);
+                
+                downloadIndex++;
+                setTimeout(downloadNext, 3000); // 3 second delay between downloads
+            }
+            
+            downloadNext();
+        }
+        
+        // Load tracks for joining
+        function loadTracksForJoining(files) {
+            if (files.length === 0) {
+                showToast('No files selected');
+                return;
+            }
+            
+            showLoading(`Loading ${files.length} tracks...`);
+            tracksToJoin = [];
+            
+            let completed = 0;
+            const totalFiles = files.length;
+            
+            // Safety timeout - hide spinner after 10 seconds no matter what
+            const timeoutId = setTimeout(() => {
+                hideLoading();
+                if (tracksToJoin.length > 0) {
+                    updateJoinTracksList();
+                    showToast(`Loaded ${tracksToJoin.length} of ${totalFiles} tracks (timeout)`);
+                } else {
+                    showToast('Error: Could not load any tracks');
+                }
+            }, 10000);
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onerror = function() {
+                    completed++;
+                    console.error('Error reading file:', file.name);
+                    checkComplete();
+                };
+                
+                reader.onload = function(e) {
+                    try {
+                        const gpxText = e.target.result;
+                        
+                        if (!gpxText || gpxText.length === 0) {
+                            console.error('Empty file:', file.name);
+                            completed++;
+                            checkComplete();
+                            return;
+                        }
+                        
+                        // Parse GPX (this sets global gpxHeader and gpxFooter)
+                        const points = parseGPX(gpxText);
+                        
+                        if (points.length === 0) {
+                            console.error('No points found in file:', file.name);
+                            completed++;
+                            checkComplete();
+                            return;
+                        }
+                        
+                        // IMMEDIATELY capture the header and footer before next file overwrites them
+                        const fileHeader = gpxHeader;
+                        const fileFooter = gpxFooter;
+                        const fileName = extractTrackName(fileHeader) || file.name.replace('.gpx', '');
+                        
+                        tracksToJoin.push({
+                            name: fileName,
+                            points: points,
+                            header: fileHeader,
+                            footer: fileFooter
+                        });
+                        
+                        completed++;
+                        checkComplete();
+                    } catch (error) {
+                        console.error('Error parsing file:', file.name, error);
+                        completed++;
+                        checkComplete();
+                    }
+                };
+                
+                function checkComplete() {
+                    if (completed === totalFiles) {
+                        clearTimeout(timeoutId);
+                        hideLoading();
+                        if (tracksToJoin.length > 0) {
+                            // Sort by name to maintain order
+                            tracksToJoin.sort((a, b) => a.name.localeCompare(b.name));
+                            updateJoinTracksList();
+                            showToast(`Loaded ${tracksToJoin.length} tracks`);
+                        } else {
+                            showToast('Error: No valid tracks found');
+                        }
+                    }
+                }
+                
+                reader.readAsText(file);
+            });
+        }
+        
+        // Update join tracks list
+        function updateJoinTracksList() {
+            const container = document.getElementById('join-tracks-container');
+            const list = document.getElementById('join-tracks-list');
+            
+            if (tracksToJoin.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            tracksToJoin.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'split-track-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="split-track-name">${index + 1}. ${track.name}</div>
+                        <div class="split-track-points">${track.points.length} points</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // Join all loaded tracks
+        function joinAllTracksConfirm() {
+            if (tracksToJoin.length < 2) {
+                showToast('Need at least 2 tracks to join');
+                return;
+            }
+            
+            showLoading('Joining tracks...');
+            
+            setTimeout(() => {
+                // Combine all points
+                let allPoints = [];
+                tracksToJoin.forEach(track => {
+                    allPoints = allPoints.concat(track.points);
+                });
+                
+                // Use first track's header and footer
+                gpxHeader = tracksToJoin[0].header;
+                gpxFooter = tracksToJoin[0].footer;
+                
+                // Create joined track name
+                const firstName = tracksToJoin[0].name.replace(/_\d+$/, '').replace(/_X$/, '').replace(/_J$/, '');
+                const joinedName = `${firstName}_J`;
+                
+                originalTrackName = joinedName;
+                trackName = joinedName;
+                updateTrackName(joinedName);
+                fileName = `${joinedName}.gpx`;
+                
+                // Set as current track
+                originalTrackpoints = allPoints;
+                trackpoints = [...allPoints];
+                isEdited = false;
+                
+                // Clear split tracks
+                splitTracks = [];
+                updateSplitTracksList();
+                
+                // Update map
+                clearMarkers();
+                createMarkers();
+                updateTrackLine();
+                
+                const latLngs = trackpoints.map(p => [p.lat, p.lon]);
+                map.fitBounds(latLngs, { padding: [50, 50] });
+                
+                // Update Save button with new joined filename
+                const saveXBtn = document.getElementById('save-x-btn');
+                const saveXText = document.getElementById('save-x-text');
+                if (saveXBtn) saveXBtn.disabled = false;
+                if (saveXText && fileName) {
+                    saveXText.textContent = `Save ${fileName}`;
+                }
+                document.getElementById('clear-btn').disabled = false;
+                document.getElementById('simplify-btn').disabled = false;
+                document.getElementById('restore-btn').disabled = false;
+                document.getElementById('split-mode-btn').disabled = false;
+                document.getElementById('rect-select-btn').disabled = false;
+                document.getElementById('delete-segment-btn').disabled = false;
+                
+                updateInfo();
+                hideLoading();
+                showToast(`Joined ${tracksToJoin.length} tracks into ${joinedName}`);
+                
+                // Clear join list
+                tracksToJoin = [];
+                updateJoinTracksList();
+                
+                closeMenu();
+            }, 100);
+        }
+        
+        // Load GPX
+        function loadGPX(file) {
+            showLoading('Reading GPX file...');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const gpxText = e.target.result;
+                originalTrackpoints = parseGPX(gpxText);
+                
+                if (originalTrackpoints.length === 0) {
+                    hideLoading();
+                    showToast('No trackpoints found');
+                    return;
+                }
+                
+                showLoading(`Processing ${originalTrackpoints.length.toLocaleString()} points...`);
+                
+                // Auto-simplify if too many points
+                setTimeout(() => {
+                    clearMarkers();
+                    if (trackLayer) map.removeLayer(trackLayer);
+                    
+                    // Reset state
+                    isEdited = false;
+                    splitTracks = [];
+                    tracksToJoin = [];
+                    updateSplitTracksList();
+                    updateJoinTracksList();
+                    
+                    // Load track as-is, NO automatic simplification
+                    // User will manually apply simplification if desired
+                    trackpoints = [...originalTrackpoints];
+                    
+                    fileName = trackName + '.gpx';
+                    
+                    updateTrackLine();
+                    
+                    // Only create markers for small files on load
+                    // Large files (>1000 points) will create markers only when zoomed in
+                    if (trackpoints.length <= 1000) {
+                        createMarkers();
+                    }
+                    
+                    const latLngs = trackpoints.map(p => [p.lat, p.lon]);
+                    map.fitBounds(latLngs, { padding: [50, 50] });
+                    
+                    // Update Save button with filename
+                    const saveXBtn = document.getElementById('save-x-btn');
+                    const saveXText = document.getElementById('save-x-text');
+                    if (saveXBtn) saveXBtn.disabled = false;
+                    if (saveXText && fileName) {
+                        saveXText.textContent = `Save ${fileName}`;
+                    }
+                    document.getElementById('clear-btn').disabled = false;
+                    document.getElementById('simplify-btn').disabled = false;
+                    document.getElementById('restore-btn').disabled = false;
+                    document.getElementById('split-mode-btn').disabled = false;
+                    document.getElementById('rect-select-btn').disabled = false;
+                    document.getElementById('delete-segment-btn').disabled = false;
+                    
+                    updateInfo();
+                    closeMenu();
+                    hideLoading();
+                    showEmergencyButton(); // Show emergency save button
+                }, 100);
+            };
+            reader.readAsText(file);
+        }
+        
+        // Generate GPX for a specific track
+        function generateGPXForTrack(name, points) {
+            let header = gpxHeader;
+            if (header.includes('<name>')) {
+                header = header.replace(/<name>.*?<\/name>/, `<name>${name}</name>`);
+            } else {
+                header = header.replace(/<trk>/, `<trk>\n  <name>${name}</name>`);
+            }
+            
+            let trkptsXML = '';
+            points.forEach(point => {
+                trkptsXML += `    <trkpt lat="${point.lat.toFixed(7)}" lon="${point.lon.toFixed(7)}">`;
+                
+                if (point.ele) {
+                    trkptsXML += `<ele>${point.ele}</ele>`;
+                }
+                
+                if (point.time) {
+                    trkptsXML += `<time>${point.time}</time>`;
+                }
+                
+                trkptsXML += `</trkpt>\n`;
+            });
+            
+            return header + trkptsXML + gpxFooter;
+        }
+        
+        // Generate GPX
+        function generateGPX() {
+            // If there are deletion markers, it means we've created gaps
+            // Split the track at those gaps when saving
+            if (deletionMarkers.length > 0) {
+                return generateMultiTrackGPXFromGaps();
+            }
+            // If there are existing split tracks (from old split mode)
+            if (splitTracks.length > 0) {
+                return generateMultiTrackGPX();
+            }
+            // Otherwise, generate single track GPX
+            return generateGPXForTrack(trackName, trackpoints);
+        }
+        
+        // Generate multi-track GPX by detecting gaps in current trackpoints
+        function generateMultiTrackGPXFromGaps() {
+            // Detect gaps by finding large distances between consecutive points
+            const segments = [];
+            let currentSegment = [];
+            
+            for (let i = 0; i < trackpoints.length; i++) {
+                currentSegment.push(trackpoints[i]);
+                
+                // Check if next point is far away (gap from deletion)
+                if (i < trackpoints.length - 1) {
+                    const p1 = L.latLng(trackpoints[i].lat, trackpoints[i].lon);
+                    const p2 = L.latLng(trackpoints[i + 1].lat, trackpoints[i + 1].lon);
+                    const distance = p1.distanceTo(p2); // meters
+                    
+                    // If distance > 100m, assume it's a gap from deletion
+                    // (Normal GPS points are usually closer together)
+                    if (distance > gapThreshold) {
+                        if (currentSegment.length > 1) {
+                            segments.push([...currentSegment]);
+                        }
+                        currentSegment = [];
+                    }
+                }
+            }
+            
+            // Add the last segment
+            if (currentSegment.length > 1) {
+                segments.push(currentSegment);
+            }
+            
+            // If only one segment, save as single track
+            if (segments.length <= 1) {
+                return generateGPXForTrack(trackName, trackpoints);
+            }
+            
+            // Generate multi-track GPX
+            const baseName = originalTrackName.replace(/_\d+$/, '').replace(/_X$/, '').replace(/_J$/, '');
+            
+            let gpx = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            gpx += '<gpx version="1.1" creator="GPX Track Editor" xmlns="http://www.topografix.com/GPX/1/1">\n';
+            
+            segments.forEach((segment, index) => {
+                gpx += '  <trk>\n';
+                gpx += `    <name>${baseName}_${index + 1}</name>\n`;
+                gpx += '    <trkseg>\n';
+                
+                segment.forEach(point => {
+                    gpx += `      <trkpt lat="${point.lat.toFixed(7)}" lon="${point.lon.toFixed(7)}">`;
+                    
+                    if (point.ele) {
+                        gpx += `<ele>${point.ele}</ele>`;
+                    }
+                    
+                    if (point.time) {
+                        gpx += `<time>${point.time}</time>`;
+                    }
+                    
+                    gpx += `</trkpt>\n`;
+                });
+                
+                gpx += '    </trkseg>\n';
+                gpx += '  </trk>\n';
+            });
+            
+            gpx += '</gpx>';
+            return gpx;
+        }
+        
+        // Generate multi-track GPX file (all split tracks in one file)
+        function generateMultiTrackGPX() {
+            // Start with GPX header (without any track info)
+            let gpx = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            gpx += '<gpx version="1.1" creator="GPX Track Editor" xmlns="http://www.topografix.com/GPX/1/1">\n';
+            
+            // Add each split track as a separate <trk> element
+            splitTracks.forEach(track => {
+                gpx += '  <trk>\n';
+                gpx += `    <name>${track.name}</name>\n`;
+                gpx += '    <trkseg>\n';
+                
+                track.points.forEach(point => {
+                    gpx += `      <trkpt lat="${point.lat.toFixed(7)}" lon="${point.lon.toFixed(7)}">`;
+                    
+                    if (point.ele) {
+                        gpx += `<ele>${point.ele}</ele>`;
+                    }
+                    
+                    if (point.time) {
+                        gpx += `<time>${point.time}</time>`;
+                    }
+                    
+                    gpx += `</trkpt>\n`;
+                });
+                
+                gpx += '    </trkseg>\n';
+                gpx += '  </trk>\n';
+            });
+            
+            gpx += '</gpx>';
+            return gpx;
+        }
+        
+        // Download GPX
+        function downloadGPX() {
+            const gpxText = generateGPX();
+            const blob = new Blob([gpxText], { type: 'application/gpx+xml' });
+            if (window.lastSaveUrl) URL.revokeObjectURL(window.lastSaveUrl);
+    const url = URL.createObjectURL(blob);
+    window.lastSaveUrl = url;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('GPX saved to Downloads ✓');
+            closeMenu();
+        }
+        
+        // Save _X GPX with explicit tap
+        async function saveXGPX() {
+            if (!trackpoints || trackpoints.length === 0) {
+                showToast('Nothing to save');
+                return;
+            }
+            
+            // If split tracks exist, save each one
+            if (splitTracks.length > 0) {
+                for (const track of splitTracks) {
+                    const gpxText = generateGPXForTrack(track.name, track.points);
+                    await saveFileWithPicker(gpxText, `${track.name}.gpx`);
+                }
+                
+                // Clear split markers (red X marks)
+                if (window.splitMarkers) {
+                    window.splitMarkers.forEach(m => map.removeLayer(m));
+                    window.splitMarkers = [];
+                }
+                
+                showToast(`✓ Saved ${splitTracks.length} GPX files`);
+            } else {
+                // Normal save - single track
+                let base = fileName || (trackName || 'track.gpx');
+                base = base.replace(/\.gpx$/i, '');
+                base = base.replace(/_X$/, '');
+                const saveName = base + '_X.gpx';
+                
+                const gpxText = generateGPX();
+                await saveFileWithPicker(gpxText, saveName);
+            }
+        }
+        
+        // Save file using File System Access API (lets user pick folder)
+        async function saveFileWithPicker(content, suggestedName) {
+            // Use File System Access API if available (Chrome/Edge)
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: suggestedName,
+                        types: [{
+                            description: 'GPX Files',
+                            accept: { 'application/gpx+xml': ['.gpx'] }
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    showToast(`✓ Saved ${suggestedName}`);
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        // Fallback to normal download if picker fails
+                        downloadFile(content, suggestedName);
+                    }
+                }
+            } else {
+                // Fallback for browsers without File System Access API
+                downloadFile(content, suggestedName);
+            }
+        }
+        
+        // Fallback download function
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`✓ Saved ${fileName}`);
+        }
+        
+        // Generate GPX for a specific track
+        function generateGPXForTrack(trackName, points) {
+            let gpx = '<?xml version="1.0"?>\n';
+            gpx += '<gpx version="1.1" creator="GPX Track Editor v5.69" xmlns="http://www.topografix.com/GPX/1/1">\n';
+            gpx += '  <trk>\n';
+            gpx += `    <name>${trackName}</name>\n`;
+            gpx += '    <trkseg>\n';
+            
+            points.forEach(pt => {
+                gpx += `      <trkpt lat="${pt.lat}" lon="${pt.lon}">\n`;
+                if (pt.ele) gpx += `        <ele>${pt.ele}</ele>\n`;
+                if (pt.time) gpx += `        <time>${pt.time}</time>\n`;
+                gpx += '      </trkpt>\n';
+            });
+            
+            gpx += '    </trkseg>\n';
+            gpx += '  </trk>\n';
+            gpx += '</gpx>\n';
+            return gpx;
+        }
+        
+        // Simplify track manually
+        function applySimplify() {
+            if (originalTrackpoints.length === 0) return;
+            
+            showLoading('Simplifying track...');
+            
+            setTimeout(() => {
+                const slider = document.getElementById('simplify-slider');
+                let percent = 10; // default
+                
+                if (slider) {
+                    percent = parseInt(slider.value);
+                    if (isNaN(percent)) {
+                        percent = 10;
+                    }
+                }
+                
+                const tolerance = percentToTolerance(percent);
+                
+                clearMarkers();
+                trackpoints = simplifyTrack(originalTrackpoints, tolerance);
+                createMarkers();
+                updateTrackLine();
+                updateInfo();
+                markAsEdited();
+                hideLoading();
+                
+                const reductionPercent = Math.round((1 - trackpoints.length / originalTrackpoints.length) * 100);
+                showToast(`Simplified: ${trackpoints.length} points (${reductionPercent}% reduction)`);
+                closeMenu();
+            }, 100);
+        }
+        
+        // Restore original unsimplified track
+        function restoreOriginal() {
+            if (originalTrackpoints.length === 0) {
+                showToast('No original track to restore');
+                return;
+            }
+            
+            if (originalTrackpoints.length === trackpoints.length) {
+                showToast('Track is already original (not simplified)');
+                return;
+            }
+            
+            showLoading('Restoring original track...');
+            
+            setTimeout(() => {
+                clearMarkers();
+                trackpoints = [...originalTrackpoints];
+                createMarkers();
+                updateTrackLine();
+                updateInfo();
+                markAsEdited();
+                hideLoading();
+                
+                showToast(`Restored: ${trackpoints.length} original points`);
+                closeMenu();
+            }, 100);
+        }
+        
+        // Clear track
+        function clearTrack() {
+            clearMarkers();
+            if (trackLayer) map.removeLayer(trackLayer);
+            trackpoints = [];
+            originalTrackpoints = [];
+            gpxHeader = '';
+            gpxFooter = '';
+            trackName = '';
+            originalTrackName = '';
+            isEdited = false;
+            splitTracks = [];
+            tracksToJoin = [];
+            updateSplitTracksList();
+            updateJoinTracksList();
+            
+            // Reset Save button
+            const saveXBtn = document.getElementById('save-x-btn');
+            const saveXText = document.getElementById('save-x-text');
+            if (saveXBtn) saveXBtn.disabled = true;
+            if (saveXText) saveXText.textContent = 'Save GPX';
+            
+            document.getElementById('clear-btn').disabled = true;
+            document.getElementById('simplify-btn').disabled = true;
+            document.getElementById('restore-btn').disabled = true;
+            document.getElementById('split-mode-btn').disabled = true;
+            document.getElementById('rect-select-btn').disabled = true;
+            document.getElementById('delete-segment-btn').disabled = true;
+            updateInfo();
+            showToast('Track cleared');
+            closeMenu();
+            hideEmergencyButton(); // Hide emergency save button
+        }
+        
+        // Update info
+        function updateInfo() {
+            const info = document.getElementById('info');
+            if (trackpoints.length > 0) {
+                const distance = calculateDistance();
+                const current = trackpoints.length;
+                const original = originalTrackpoints.length;
+                const editedMarker = isEdited ? ' <span style="color: #f39c12;">●</span>' : '';
+                info.innerHTML = `<strong>${trackName}</strong>${editedMarker}<br>` +
+                    `<strong>${current.toLocaleString()}</strong> points shown<br>` +
+                    (original !== current ? `<strong>${original.toLocaleString()}</strong> original points<br>` : '') +
+                    `<strong>${distance}</strong> km`;
+            } else {
+                info.textContent = 'Tap "Load GPX File" to begin';
+            }
+        }
+        
+        // Calculate distance
+        function calculateDistance() {
+            let total = 0;
+            for (let i = 0; i < trackpoints.length - 1; i++) {
+                const p1 = L.latLng(trackpoints[i].lat, trackpoints[i].lon);
+                const p2 = L.latLng(trackpoints[i + 1].lat, trackpoints[i + 1].lon);
+                total += p1.distanceTo(p2);
+            }
+            return (total / 1000).toFixed(2);
+        }
+        
+        // Menu functions
+        function openMenu() {
+            document.getElementById('menu').classList.add('open');
+            document.getElementById('menu-overlay').classList.add('show');
+        }
+        
+        function closeMenu() {
+            document.getElementById('menu').classList.remove('open');
+            document.getElementById('menu-overlay').classList.remove('show');
+        }
+        
+        // Event listeners
+        document.getElementById('menu-btn').addEventListener('click', openMenu);
+        document.getElementById('close-menu').addEventListener('click', closeMenu);
+        document.getElementById('menu-overlay').addEventListener('click', closeMenu);
+        
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 1) {
+                // Multiple files selected → automatically join them
+                loadTracksForJoining(files);
+            } else if (files.length === 1) {
+                // Single file selected → load normally
+                loadGPX(files[0]);
+            }
+            e.target.value = '';
+        });
+        
+        document.getElementById('join-file-input').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                loadTracksForJoining(files);
+            }
+            e.target.value = '';
+        });
+        
+        const saveXBtn = document.getElementById('save-x-btn');
+        if (saveXBtn) {
+            saveXBtn.addEventListener('click', saveXGPX);
+        }
+        
+        // Emergency Save Button - REMOVED (controls stable in v5.69+)
+        function showEmergencyButton() {
+            // Removed
+        }
+        
+        function hideEmergencyButton() {
+            // Removed
+        }
+        
+        const simplifySlider = document.getElementById('simplify-slider');
+        const simplifyValue = document.getElementById('simplify-value');
+        if (simplifySlider && simplifyValue) {
+            simplifySlider.addEventListener('input', function() {
+                const percent = parseInt(this.value);
+                simplifyValue.textContent = `Simplification: ${percent}%`;
+            });
+        }
+        document.getElementById('clear-btn').addEventListener('click', clearTrack);
+        document.getElementById('simplify-btn').addEventListener('click', applySimplify);
+        document.getElementById('restore-btn').addEventListener('click', restoreOriginal);
+        document.getElementById('split-mode-btn').addEventListener('click', toggleSplitMode);
+        document.getElementById('rect-select-btn').addEventListener('click', toggleRectSelectMode);
+        document.getElementById('delete-segment-btn').addEventListener('click', toggleDeleteSegmentMode);
+        
+        // Gap threshold slider
+        document.getElementById('gap-threshold-slider').addEventListener('input', function(e) {
+            // Logarithmic scale: slider 0-5 = 10m to 1,000km
+            // Formula: 10^(sliderValue + 1) meters
+            const sliderValue = parseFloat(e.target.value);
+            gapThreshold = Math.pow(10, sliderValue + 1); // 10^(0+1) = 10m at min, 10^(5+1) = 1000km at max
+            
+            // Format display (m or km)
+            let displayValue;
+            if (gapThreshold >= 1000) {
+                displayValue = (gapThreshold / 1000).toFixed(1) + ' km';
+            } else {
+                displayValue = Math.round(gapThreshold) + ' m';
+            }
+            
+            document.getElementById('gap-threshold-value').textContent = displayValue;
+            
+            // Redraw track with new threshold
+            if (trackpoints.length > 0) {
+                updateTrackLine();
+            }
+        });
+        
+        document.getElementById('delete-selected-btn').addEventListener('click', deleteSelectedPoints);
+        document.getElementById('join-tracks-btn').addEventListener('click', joinAllTracks);
+        
+        // Keyboard shortcut: Press Escape to restore header/menu if it disappears
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.keyCode === 27) {
+                forceUIVisible();
+            }
+        });
+        
+        // Periodic check to ensure header stays visible (every 1 second)
+        setInterval(forceUIVisible, 1000);
+        document.getElementById('exit-btn').addEventListener('click', function() {
+            window.close();
+            setTimeout(() => window.history.back(), 100);
+        });
+        
+        // Initialize only after DOM and Leaflet are ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof L === 'undefined') {
+                alert('Leaflet library failed to load.');
+                return;
+            }
+
+            // Define geometry utilities after L is loaded
+            L.GeometryUtil = {
+                distanceSegment: function(map, latlng, latlng1, latlng2) {
+                    const p = map.latLngToLayerPoint(latlng);
+                    const p1 = map.latLngToLayerPoint(latlng1);
+                    const p2 = map.latLngToLayerPoint(latlng2);
+                    return this.distanceToSegment(p, p1, p2);
+                },
+                
+                distanceToSegment: function(p, p1, p2) {
+                    const x = p.x, y = p.y;
+                    const x1 = p1.x, y1 = p1.y;
+                    const x2 = p2.x, y2 = p2.y;
+                    
+                    const A = x - x1;
+                    const B = y - y1;
+                    const C = x2 - x1;
+                    const D = y2 - y1;
+                    
+                    const dot = A * C + B * D;
+                    const lenSq = C * C + D * D;
+                    let param = -1;
+                    
+                    if (lenSq !== 0) param = dot / lenSq;
+                    
+                    let xx, yy;
+                    
+                    if (param < 0) {
+                        xx = x1;
+                        yy = y1;
+                    } else if (param > 1) {
+                        xx = x2;
+                        yy = y2;
+                    } else {
+                        xx = x1 + param * C;
+                        yy = y1 + param * D;
+                    }
+                    
+                    const dx = x - xx;
+                    const dy = y - yy;
+                    return Math.sqrt(dx * dx + dy * dy);
+                }
+            };
+
+            initMap();
+            updateInfo();
+        });
+    </script>
+</body>
+</html>
