@@ -9,7 +9,7 @@ A powerful, web-based GPX file editor for simplifying, editing, splitting, and j
 ## Features
 
 ### ⚡ Performance
-- **Instant load** for massive files (tested with 322,000+ points)
+- **Instant load** for massive files (tested with 520,000+ points)
 - **Smart lazy-loading** - markers appear on-demand when you zoom in
 - **Responsive zoom** - even huge tracks feel snappy
 - Handles extreme data efficiently without freezing
