@@ -277,7 +277,7 @@ MIT License — see [LICENSE](LICENSE) file for details.
 ## Author
 
 **Tony Gozdz** © 2026  
-Battery R&D Engineer · Serious GPX Geek 🗺️
+Battery & 3D Printing R&D Engineer · Serious GPX Geek 🗺️
 
 ## Support
 
